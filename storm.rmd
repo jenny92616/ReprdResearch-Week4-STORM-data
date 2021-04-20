@@ -1,8 +1,9 @@
 ---
 title: "Storm"
 output:
-  html_document: default
+  pdf_document: default
   word_document: default
+  html_document: default
 ---
 
 ```{r }
@@ -15,8 +16,10 @@ setwd("C:/Users/John/Desktop/ReprdResearch-Week4-STORM-data")
 ```{r}
 #Data proccessing
 
+tinytex::install_tinytex()
 library("data.table")
 library("ggplot2")
+library(tinytex)
 
 raw_data <- read.csv("/Users/John/Desktop/ReprdResearch-Week4-STORM-data/repdata_data_StormData.csv.bz2")
 #Questions #1

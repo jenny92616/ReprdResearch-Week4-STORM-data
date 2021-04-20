@@ -6,6 +6,6 @@ server: rpubs.com
 hostUrl: rpubs.com
 appId: https://api.rpubs.com/api/v1/document/757843/d9e264f5dc1346119dfe4dc795ccc2d4
 bundleId: https://api.rpubs.com/api/v1/document/757843/d9e264f5dc1346119dfe4dc795ccc2d4
-url: http://rpubs.com/jenny92616/757843/edit
-when: 1618948173.05154
-lastSyncTime: 1618948173.05154
+url: http://rpubs.com/jenny92616/757843
+when: 1618948806.69452
+lastSyncTime: 1618948806.69452
