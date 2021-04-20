@@ -1,0 +1,108 @@
+---
+title: "Storm"
+output:
+  html_document: default
+  word_document: default
+---
+
+```{r }
+setwd("C:/Users/John/Desktop/ReprdResearch-Week4-STORM-data")
+#Synopsis
+# Storms and other severe weather events can cause both public health and economic problems for communities and municipalities. Many severe events can result in fatalities, injuries, and property damage, and preventing such outcomes to the extent possible is a key concern.
+# This project involves exploring the U.S. National Oceanic and Atmospheric Administration’s (NOAA) storm database. This database tracks characteristics of major storms and weather events in the United States, including when and where they occur, as well as estimates of any fatalities, injuries, and property damage.
+```
+
+```{r}
+#Data proccessing
+
+library("data.table")
+library("ggplot2")
+
+raw_data <- read.csv("/Users/John/Desktop/ReprdResearch-Week4-STORM-data/repdata_data_StormData.csv.bz2")
+#Questions #1
+
+# For Questions #1, events will be evaluated by which are most harmful with respect to population helth. 
+# Total number of casualties (TOTAL_CAS) 
+# is estimated as the sum of INJURIES and FATALITIES for all events.
+```
+
+```{r}
+raw_data$TOTAL_CAS <- raw_data$FATALITIES + raw_data$INJURIES
+```
+```{r}
+# Questions #2
+# For Question #2, events which have the greatest economic consequences will be evaluated. 
+# The assumption where the economic consequences is the sum of crop damage and property damage TOTAL_DMG. 
+# To construct the TOTAL_DMG variable, PROPDMGEXP and CROPDMGEXP will be transformed in 1000, 1e+06 and 1e+09 respectivley for k, m and b.
+
+value <- function(x) {
+  x <- tolower(x)
+  if (x == "k") res <- 1000
+  if (x == "m") res <- 1e+06
+  if (x == "b") res <- 1e+09
+  else res <- 1
+  res
+}
+
+raw_data$PROP_DMG <- raw_data$PROPDMG * sapply(raw_data$PROPDMGEXP, value) /1000000
+raw_data$CROP_DMG <- raw_data$CROPDMG * sapply(raw_data$CROPDMGEXP, value) /1000000
+raw_data$TOTAL_DMG <- raw_data$PROP_DMG + raw_data$CROP_DMG
+
+#Taking only relevant variables, a new data set is constructed. The new data set is aggregated by EVTYPE.
+
+proc_data <- raw_data[,c("EVTYPE", "FATALITIES", "INJURIES", "TOTAL_CAS", "PROP_DMG", "CROP_DMG", "TOTAL_DMG")]
+proc_data <- aggregate(proc_data[,2:7], by=list(proc_data$EVTYPE),FUN=sum, na.rm=TRUE)
+colnames(proc_data) <- c("EVTYPE", colnames(proc_data[2:7]))
+#top_data() function takes data frame (df), column number (col) and returns the top results.
+
+top_data <- function(df, col, top) {
+  df <- df[,c(1, col)]
+  df <- df[order(df[,2], decreasing = T),]
+  df <- df[1:top,]
+  rownames(df) <- NULL
+  df
+}
+```
+
+```{r}
+#Results
+# Question 1
+
+# Across the United States, which types of events are most harmful with respect to population health?
+#   The top 3 events with most FATALITIES are:
+top_data(proc_data, 2,3)
+# The top 3 events with most INJURIES are:
+top_data(proc_data, 3,3)
+# The top 10 events with most Total casualties are:
+cas_data <- top_data(proc_data, 4,10)
+print(cas_data)
+# Plot top 10 events with most Total casualties:
+ggplot(cas_data, aes(x=EVTYPE, y=TOTAL_CAS, fill=EVTYPE)) +
+  geom_bar(stat="identity") +
+  ggtitle("Top 10 casualties due to severe weather events in US") +
+  xlab("Events") +
+  ylab("Total casualties") +
+  theme(axis.text.x = element_text(angle = 90, vjust=0.5))
+
+
+# Question 2
+# Across the United States, which types of events have the greatest economic consequences?
+#   The top 3 events causing most property damages are:
+top_data(proc_data, 5,3)
+# The top 3 events causing most crop damages are:
+top_data(proc_data, 6,3)
+# The top 10 events with most Total casualties are:
+dmg_data <- top_data(proc_data, 7,10)
+print(dmg_data)
+# Plot top 10 events causing most damage:
+ggplot(dmg_data, aes(x=EVTYPE, y=TOTAL_DMG, fill=EVTYPE)) +
+  geom_bar(stat="identity") +
+  ggtitle("Top 10 weather economic consequences events in US") +
+  xlab("Events") +
+  ylab("Total damage in millions USD") +
+  theme(axis.text.x = element_text(angle = 90, vjust=0.5))
+
+# Results
+#  Across the United States, which types of events are most harmful with respect to population health? - The 5 most relevant harmful events with respect to population health are Tornado, Excessive Heat, TSTM Wind, Flood and Lightning in this order.
+# Across the United States, which types of events have the greatest economic consequences? - The 5 most relevant events causing the greatest economic damage are Flood, Hurrican/Typhoon, Tornado, Storm Surge and Hail in this order, for both Property and Crop Damage.
+```
